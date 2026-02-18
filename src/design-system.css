@@ -624,3 +624,98 @@ p {
         flex-direction: column;
     }
 }
+
+/* CSS for the new Resume Builder Layout */
+
+/* Extend Design System */
+.kn-nav-links {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.kn-nav-link {
+    color: var(--color-text);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.kn-nav-link.active {
+    color: var(--color-accent);
+    font-weight: 700;
+}
+
+.kn-nav-separator {
+    color: var(--color-border);
+}
+
+.kn-home-container {
+    padding: 100px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+}
+
+.kn-home-title {
+    font-size: 3rem;
+    margin-bottom: 20px;
+}
+
+.kn-home-subtitle {
+    font-size: 1.5rem;
+    color: var(--color-muted);
+    margin-bottom: 40px;
+}
+
+.kn-grid-builder {
+    display: flex;
+    gap: 30px;
+}
+
+.kn-preview-panel {
+    flex: 1;
+    background: #e0e0e0;
+    /* Visual distinction for preview area */
+    padding: 20px;
+    border-radius: var(--border-radius);
+    overflow-y: auto;
+    max-height: calc(100vh - 100px);
+    position: sticky;
+    top: 90px;
+}
+
+/* Override workspace to be left column */
+.kn-workspace {
+    flex: 1;
+    /* Equal width or adjust as needed */
+    max-width: 50%;
+}
+
+.kn-flex-between {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.kn-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.kn-btn--sm {
+    padding: 4px 8px;
+    font-size: 12px;
+}
+
+.kn-btn--lg {
+    padding: 16px 32px;
+    font-size: 20px;
+}
+
+.kn-preview-full {
+    background: #f0f0f0;
+    justify-content: center;
+}

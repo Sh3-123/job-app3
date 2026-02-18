@@ -1,7 +1,13 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import Navbar from './components/Navbar';
+import Home from './pages/Home';
+import Builder from './pages/Builder';
+import Preview from './pages/Preview';
+import AppProof from './pages/ProofPage';
+import TrackProof from './pages/TrackProof';
 import StepPage from './pages/StepPage';
-import ProofPage from './pages/ProofPage';
+import { ResumeProvider } from './context/ResumeContext';
 
 const STEPS = [
   { path: '/rb/01-problem', step: 1, title: 'Problem Statement', subtitle: "Define the core problem you are solving" },
@@ -16,25 +22,34 @@ const STEPS = [
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Navigate to="/rb/01-problem" replace />} />
-        {STEPS.map((stepInfo) => (
-          <Route
-            key={stepInfo.path}
-            path={stepInfo.path}
-            element={
-              <StepPage
-                stepNumber={stepInfo.step}
-                title={stepInfo.title}
-                subtitle={stepInfo.subtitle}
-              />
-            }
-          />
-        ))}
-        <Route path="/rb/proof" element={<ProofPage />} />
-      </Routes>
-    </Router>
+    <ResumeProvider>
+      <Router>
+        <Navbar />
+        <Routes>
+          {/* Main App Routes */}
+          <Route path="/" element={<Home />} />
+          <Route path="/builder" element={<Builder />} />
+          <Route path="/preview" element={<Preview />} />
+          <Route path="/proof" element={<AppProof />} />
+
+          {/* Project Track Routes */}
+          {STEPS.map((stepInfo) => (
+            <Route
+              key={stepInfo.path}
+              path={stepInfo.path}
+              element={
+                <StepPage
+                  stepNumber={stepInfo.step}
+                  title={stepInfo.title}
+                  subtitle={stepInfo.subtitle}
+                />
+              }
+            />
+          ))}
+          <Route path="/rb/proof" element={<TrackProof />} />
+        </Routes>
+      </Router>
+    </ResumeProvider>
   );
 }
 

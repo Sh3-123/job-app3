@@ -40,12 +40,15 @@ const TextAreaField = ({ label, value, onChange, placeholder }) => (
     </div>
 );
 
+import ScorePanel from './ScorePanel';
+
 export default function ResumeForm() {
-    const { resumeData, updatePersonal, updateSection, addEntry, removeEntry, loadSampleData } = useResume();
+    const { resumeData, updatePersonal, updateSection, addEntry, removeEntry, loadSampleData, clearData } = useResume();
     const [eduInput, setEduInput] = useState({ school: '', degree: '', year: '' });
     const [expInput, setExpInput] = useState({ company: '', role: '', duration: '', description: '' });
     const [projInput, setProjInput] = useState({ name: '', description: '' });
 
+    // Handlers...
     const handleAddEducation = () => {
         if (eduInput.school) {
             addEntry('education', eduInput);
@@ -69,9 +72,13 @@ export default function ResumeForm() {
 
     return (
         <div className="builder-form">
-            <div className="kn-mb-md">
+            <ScorePanel />
+            <div className="kn-btn-group kn-mb-md">
                 <button onClick={loadSampleData} className="kn-btn kn-btn--secondary kn-btn--full">
                     Load Sample Data
+                </button>
+                <button onClick={clearData} className="kn-btn kn-btn--secondary kn-btn--full kn-btn--warning" style={{ color: 'var(--color-accent)', borderColor: 'var(--color-accent)' }}>
+                    Clear All
                 </button>
             </div>
 

@@ -57,12 +57,21 @@ const INITIAL_STATE = {
 
 export function ResumeProvider({ children }) {
     const [resumeData, setResumeData] = useState(() => {
-        const saved = localStorage.getItem('ai_resume_data');
-        return saved ? JSON.parse(saved) : INITIAL_STATE;
+        try {
+            const saved = localStorage.getItem('ai_resume_data');
+            return saved ? JSON.parse(saved) : INITIAL_STATE;
+        } catch (e) {
+            console.error("Failed to load resume data", e);
+            return INITIAL_STATE;
+        }
     });
 
     useEffect(() => {
-        localStorage.setItem('ai_resume_data', JSON.stringify(resumeData));
+        try {
+            localStorage.setItem('ai_resume_data', JSON.stringify(resumeData));
+        } catch (e) {
+            console.error("Failed to save resume data", e);
+        }
     }, [resumeData]);
 
     const updatePersonal = (field, value) => {
@@ -94,6 +103,10 @@ export function ResumeProvider({ children }) {
         setResumeData(SAMPLE_DATA);
     };
 
+    const clearData = () => {
+        setResumeData(INITIAL_STATE);
+    };
+
     return (
         <ResumeContext.Provider value={{
             resumeData,
@@ -101,7 +114,8 @@ export function ResumeProvider({ children }) {
             updateSection,
             addEntry,
             removeEntry,
-            loadSampleData
+            loadSampleData,
+            clearData
         }}>
             {children}
         </ResumeContext.Provider>

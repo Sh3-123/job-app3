@@ -1,66 +1,62 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { useResume } from '../context/ResumeContext';
 
 const ResumePreview = () => {
-    const { resumeData } = useResume();
+    const { resumeData, template } = useResume();
 
-    // Basic styling for the resume layout
-    const styles = {
-        container: {
-            backgroundColor: 'white',
-            padding: '40px',
-            minHeight: '100%',
-            color: '#000',
-            fontFamily: "'Times New Roman', Times, serif", // Fallback or imported serif
-            fontSize: '11pt',
-            lineHeight: '1.4',
-            margin: '0 auto',
-            width: '100%',
-            maxWidth: '800px',
-            boxShadow: '0 0 10px rgba(0,0,0,0.1)'
-        },
-        header: {
-            textAlign: 'center',
-            borderBottom: '1px solid #000',
-            paddingBottom: '10px',
-            marginBottom: '20px'
-        },
-        name: {
-            fontSize: '24pt',
-            fontWeight: 'bold',
-            marginBottom: '5px',
-            textTransform: 'uppercase'
-        },
-        contact: {
-            fontSize: '10pt',
-            fontStyle: 'italic'
-        },
-        section: {
-            marginBottom: '15px'
-        },
-        sectionTitle: {
-            fontSize: '12pt',
-            fontWeight: 'bold',
-            textTransform: 'uppercase',
-            borderBottom: '1px solid #000',
-            marginBottom: '10px',
-            marginTop: '10px'
-        },
-        entryTitle: {
-            fontWeight: 'bold'
-        },
-        entrySubtitle: {
-            fontStyle: 'italic'
-        },
-        date: {
-            float: 'right',
-            fontStyle: 'italic'
-        },
-        list: {
-            paddingLeft: '20px',
-            marginTop: '5px'
+    // Template-specific styles
+    const getStyles = () => {
+        const base = {
+            container: {
+                backgroundColor: 'white',
+                padding: '40px',
+                minHeight: '100%',
+                color: '#000',
+                margin: '0 auto',
+                width: '100%',
+                maxWidth: '800px',
+                boxShadow: '0 0 10px rgba(0,0,0,0.1)',
+                lineHeight: '1.4'
+            },
+            header: { textAlign: 'center', marginBottom: '20px' },
+            name: { fontWeight: 'bold', textTransform: 'uppercase' },
+            contact: { fontSize: '10pt' },
+            section: { marginBottom: '15px' },
+            sectionTitle: { fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '10px' },
+            entryTitle: { fontWeight: 'bold' },
+            entrySubtitle: { fontStyle: 'italic' },
+            date: { float: 'right', fontStyle: 'italic' }
+        };
+
+        if (template === 'modern') {
+            return {
+                ...base,
+                container: { ...base.container, fontFamily: "'Inter', sans-serif", fontSize: '10pt' },
+                name: { ...base.name, fontSize: '28pt', color: '#2c3e50', letterSpacing: '1px' },
+                sectionTitle: { ...base.sectionTitle, fontSize: '12pt', color: '#2c3e50', borderBottom: '2px solid #2c3e50' },
+                header: { ...base.header, textAlign: 'left', borderBottom: 'none' }
+            };
+        } else if (template === 'minimal') {
+            return {
+                ...base,
+                container: { ...base.container, fontFamily: "'Courier New', Courier, monospace", fontSize: '10pt' },
+                name: { ...base.name, fontSize: '20pt', textAlign: 'left' },
+                sectionTitle: { ...base.sectionTitle, fontSize: '11pt', borderBottom: '1px solid #000' },
+                header: { ...base.header, textAlign: 'left', paddingBottom: '0', borderBottom: 'none' }
+            };
+        } else {
+            // Classic (Default)
+            return {
+                ...base,
+                container: { ...base.container, fontFamily: "'Times New Roman', Times, serif", fontSize: '11pt' },
+                name: { ...base.name, fontSize: '24pt' },
+                sectionTitle: { ...base.sectionTitle, fontSize: '12pt', borderBottom: '1px solid #000' },
+                header: { ...base.header, borderBottom: '1px solid #000', paddingBottom: '10px' }
+            };
         }
     };
+
+    const styles = getStyles();
 
     return (
         <div className="resume-preview-container" style={styles.container}>
@@ -89,7 +85,7 @@ const ResumePreview = () => {
                 <section style={styles.section}>
                     <div style={styles.sectionTitle}>Experience</div>
                     {resumeData.experience.map(exp => (
-                        <div key={exp.id} >
+                        <div key={exp.id} style={{ marginBottom: '10px' }}>
                             <div style={styles.entryTitle}>
                                 {exp.role}
                                 <span style={styles.date}>{exp.duration}</span>
@@ -106,7 +102,7 @@ const ResumePreview = () => {
                 <section style={styles.section}>
                     <div style={styles.sectionTitle}>Projects</div>
                     {resumeData.projects.map(proj => (
-                        <div key={proj.id} >
+                        <div key={proj.id} style={{ marginBottom: '10px' }}>
                             <div style={styles.entryTitle}>{proj.name}</div>
                             <p>{proj.description}</p>
                         </div>
@@ -119,7 +115,7 @@ const ResumePreview = () => {
                 <section style={styles.section}>
                     <div style={styles.sectionTitle}>Education</div>
                     {resumeData.education.map(edu => (
-                        <div key={edu.id} >
+                        <div key={edu.id} style={{ marginBottom: '10px' }}>
                             <div style={styles.entryTitle}>
                                 {edu.school}
                                 <span style={styles.date}>{edu.year}</span>

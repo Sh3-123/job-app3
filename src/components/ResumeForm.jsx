@@ -42,8 +42,22 @@ const TextAreaField = ({ label, value, onChange, placeholder }) => (
 
 import ScorePanel from './ScorePanel';
 
+import { checkBullet } from '../utils/bulletAnalyzer';
+
+const Suggestion = ({ text }) => {
+    if (!text) return null;
+    const suggestions = checkBullet(text);
+    if (!suggestions || suggestions.length === 0) return null;
+
+    return (
+        <div className="kn-mt-xs text-small" style={{ color: 'var(--color-warning)' }}>
+            💡 {suggestions.join(" ")}
+        </div>
+    );
+};
+
 export default function ResumeForm() {
-    const { resumeData, updatePersonal, updateSection, addEntry, removeEntry, loadSampleData, clearData } = useResume();
+    const { resumeData, updatePersonal, updateSection, addEntry, removeEntry, loadSampleData, clearData, template, setTemplate } = useResume();
     const [eduInput, setEduInput] = useState({ school: '', degree: '', year: '' });
     const [expInput, setExpInput] = useState({ company: '', role: '', duration: '', description: '' });
     const [projInput, setProjInput] = useState({ name: '', description: '' });
@@ -73,6 +87,23 @@ export default function ResumeForm() {
     return (
         <div className="builder-form">
             <ScorePanel />
+
+            <div className="kn-card kn-mb-md">
+                <h3 className="kn-card__title">Choose Template</h3>
+                <div className="kn-btn-group" style={{ marginTop: '10px' }}>
+                    {['classic', 'modern', 'minimal'].map(t => (
+                        <button
+                            key={t}
+                            onClick={() => setTemplate(t)}
+                            className={`kn-btn ${template === t ? 'kn-btn--primary' : 'kn-btn--secondary'}`}
+                            style={{ textTransform: 'capitalize' }}
+                        >
+                            {t}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
             <div className="kn-btn-group kn-mb-md">
                 <button onClick={loadSampleData} className="kn-btn kn-btn--secondary kn-btn--full">
                     Load Sample Data
@@ -183,6 +214,7 @@ export default function ResumeForm() {
                 <InputField label="Role" value={expInput.role} onChange={v => setExpInput({ ...expInput, role: v })} />
                 <InputField label="Duration" value={expInput.duration} onChange={v => setExpInput({ ...expInput, duration: v })} placeholder="e.g. Jan 2020 - Present" />
                 <TextAreaField label="Description" value={expInput.description} onChange={v => setExpInput({ ...expInput, description: v })} placeholder="Describe your achievements..." />
+                <Suggestion text={expInput.description} />
                 <button onClick={handleAddExperience} className="kn-btn kn-btn--secondary kn-mt-sm">Add Experience</button>
             </BuilderSection>
 
@@ -200,6 +232,7 @@ export default function ResumeForm() {
                 )}
                 <InputField label="Project Name" value={projInput.name} onChange={v => setProjInput({ ...projInput, name: v })} />
                 <TextAreaField label="Description" value={projInput.description} onChange={v => setProjInput({ ...projInput, description: v })} placeholder="What did you build?" />
+                <Suggestion text={projInput.description} />
                 <button onClick={handleAddProject} className="kn-btn kn-btn--secondary kn-mt-sm">Add Project</button>
             </BuilderSection>
 

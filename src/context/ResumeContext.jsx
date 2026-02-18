@@ -66,6 +66,10 @@ export function ResumeProvider({ children }) {
         }
     });
 
+    const [template, setTemplate] = useState(() => {
+        return localStorage.getItem('ai_resume_template') || 'classic';
+    });
+
     useEffect(() => {
         try {
             localStorage.setItem('ai_resume_data', JSON.stringify(resumeData));
@@ -73,6 +77,10 @@ export function ResumeProvider({ children }) {
             console.error("Failed to save resume data", e);
         }
     }, [resumeData]);
+
+    useEffect(() => {
+        localStorage.setItem('ai_resume_template', template);
+    }, [template]);
 
     const updatePersonal = (field, value) => {
         setResumeData(prev => ({
@@ -115,7 +123,9 @@ export function ResumeProvider({ children }) {
             addEntry,
             removeEntry,
             loadSampleData,
-            clearData
+            clearData,
+            template,
+            setTemplate
         }}>
             {children}
         </ResumeContext.Provider>

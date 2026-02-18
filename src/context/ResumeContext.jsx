@@ -40,10 +40,17 @@ const SAMPLE_DATA = {
         {
             id: 1,
             name: 'E-commerce Dashboard',
-            description: 'A real-time analytics dashboard for online retailers built with Next.js and Tailwind CSS.'
+            description: 'A real-time analytics dashboard for online retailers built with Next.js and Tailwind CSS.',
+            techStack: ['Next.js', 'Tailwind', 'Redux'],
+            liveUrl: 'https://demo-dashboard.com',
+            githubUrl: 'https://github.com/alex/dashboard'
         }
     ],
-    skills: 'JavaScript, React, Node.js, TypeScript, CSS3, HTML5, Git, Agile'
+    skills: {
+        technical: ['JavaScript', 'React', 'Node.js', 'TypeScript', 'CSS3', 'HTML5'],
+        soft: ['Team Leadership', 'Agile', 'Mentoring'],
+        tools: ['Git', 'Jira', 'Figma']
+    }
 };
 
 const INITIAL_STATE = {
@@ -52,14 +59,26 @@ const INITIAL_STATE = {
     education: [],
     experience: [],
     projects: [],
-    skills: ''
+    skills: { technical: [], soft: [], tools: [] }
 };
 
 export function ResumeProvider({ children }) {
     const [resumeData, setResumeData] = useState(() => {
         try {
             const saved = localStorage.getItem('ai_resume_data');
-            return saved ? JSON.parse(saved) : INITIAL_STATE;
+            // Migration logic for old skills string format
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                if (typeof parsed.skills === 'string') {
+                    parsed.skills = { technical: parsed.skills.split(',').map(s => s.trim()).filter(Boolean), soft: [], tools: [] };
+                }
+                // Migration logic for old projects format
+                if (parsed.projects && parsed.projects.length > 0 && !parsed.projects[0].techStack) {
+                    parsed.projects = parsed.projects.map(p => ({ ...p, techStack: [], liveUrl: '', githubUrl: '' }));
+                }
+                return parsed;
+            }
+            return INITIAL_STATE;
         } catch (e) {
             console.error("Failed to load resume data", e);
             return INITIAL_STATE;
@@ -93,10 +112,25 @@ export function ResumeProvider({ children }) {
         setResumeData(prev => ({ ...prev, [section]: value }));
     };
 
+    // New: Specific updater for nested skills
+    const updateSkills = (category, value) => {
+        setResumeData(prev => ({
+            ...prev,
+            skills: { ...prev.skills, [category]: value }
+        }));
+    };
+
     const addEntry = (section, entry) => {
         setResumeData(prev => ({
             ...prev,
             [section]: [...prev[section], { ...entry, id: Date.now() }]
+        }));
+    };
+
+    const updateEntry = (section, id, field, value) => {
+        setResumeData(prev => ({
+            ...prev,
+            [section]: prev[section].map(item => item.id === id ? { ...item, [field]: value } : item)
         }));
     };
 
@@ -120,6 +154,8 @@ export function ResumeProvider({ children }) {
             resumeData,
             updatePersonal,
             updateSection,
+            updateSkills,
+            updateEntry,
             addEntry,
             removeEntry,
             loadSampleData,

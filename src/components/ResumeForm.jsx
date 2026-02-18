@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import { useResume } from '../context/ResumeContext';
+import TagInput from './TagInput';
+import ScorePanel from './ScorePanel';
+import { checkBullet } from '../utils/bulletAnalyzer';
 
 const BuilderSection = ({ title, children, onAdd }) => (
     <div className="kn-card kn-mb-md">
@@ -15,7 +18,7 @@ const BuilderSection = ({ title, children, onAdd }) => (
     </div>
 );
 
-const InputField = ({ label, value, onChange, placeholder, type = 'text' }) => (
+const InputField = ({ label, value, onChange, placeholder, type = 'text', maxLength }) => (
     <div className="kn-form-group">
         <label className="kn-form-label">{label}</label>
         <input
@@ -24,25 +27,28 @@ const InputField = ({ label, value, onChange, placeholder, type = 'text' }) => (
             value={value || ''}
             onChange={(e) => onChange(e.target.value)}
             placeholder={placeholder}
+            maxLength={maxLength}
         />
     </div>
 );
 
-const TextAreaField = ({ label, value, onChange, placeholder }) => (
+const TextAreaField = ({ label, value, onChange, placeholder, maxLength }) => (
     <div className="kn-form-group">
-        <label className="kn-form-label">{label}</label>
+        <div className="kn-flex-between">
+            <label className="kn-form-label">{label}</label>
+            {maxLength && (
+                <span className="text-small text-muted">{value?.length || 0}/{maxLength}</span>
+            )}
+        </div>
         <textarea
             className="kn-textarea"
             value={value || ''}
             onChange={(e) => onChange(e.target.value)}
             placeholder={placeholder}
+            maxLength={maxLength}
         />
     </div>
 );
-
-import ScorePanel from './ScorePanel';
-
-import { checkBullet } from '../utils/bulletAnalyzer';
 
 const Suggestion = ({ text }) => {
     if (!text) return null;
@@ -57,10 +63,15 @@ const Suggestion = ({ text }) => {
 };
 
 export default function ResumeForm() {
-    const { resumeData, updatePersonal, updateSection, addEntry, removeEntry, loadSampleData, clearData, template, setTemplate } = useResume();
+    const { resumeData, updatePersonal, updateSection, updateSkills, addEntry, removeEntry, loadSampleData, clearData, template, setTemplate } = useResume();
     const [eduInput, setEduInput] = useState({ school: '', degree: '', year: '' });
     const [expInput, setExpInput] = useState({ company: '', role: '', duration: '', description: '' });
-    const [projInput, setProjInput] = useState({ name: '', description: '' });
+
+    // Project Input State including techStack
+    const [projInput, setProjInput] = useState({ name: '', description: '', liveUrl: '', githubUrl: '', techStack: [] });
+
+    // Skills Suggestion State
+    const [isSuggesting, setIsSuggesting] = useState(false);
 
     // Handlers...
     const handleAddEducation = () => {
@@ -80,8 +91,28 @@ export default function ResumeForm() {
     const handleAddProject = () => {
         if (projInput.name) {
             addEntry('projects', projInput);
-            setProjInput({ name: '', description: '' });
+            setProjInput({ name: '', description: '', liveUrl: '', githubUrl: '', techStack: [] });
         }
+    };
+
+    const handleSuggestSkills = () => {
+        setIsSuggesting(true);
+        setTimeout(() => {
+            const suggestions = {
+                technical: ["TypeScript", "React", "Node.js", "PostgreSQL", "GraphQL"],
+                soft: ["Team Leadership", "Problem Solving"],
+                tools: ["Git", "Docker", "AWS"]
+            };
+
+            // Merge unique skills
+            const merge = (current, incoming) => [...new Set([...current, ...incoming])];
+
+            updateSkills('technical', merge(resumeData.skills.technical || [], suggestions.technical));
+            updateSkills('soft', merge(resumeData.skills.soft || [], suggestions.soft));
+            updateSkills('tools', merge(resumeData.skills.tools || [], suggestions.tools));
+
+            setIsSuggesting(false);
+        }, 1000);
     };
 
     return (
@@ -168,14 +199,47 @@ export default function ResumeForm() {
                 />
             </BuilderSection>
 
-            {/* Skills */}
-            <BuilderSection title="Technical Skills">
-                <TextAreaField
-                    label="Skills (comma-separated)"
-                    value={resumeData.skills}
-                    onChange={(v) => updateSection('skills', v)}
-                    placeholder="e.g. React, Node.js, Python, AWS..."
-                />
+            {/* Skills Accordion Style */}
+            <BuilderSection title="Skills & Expertise">
+                <div className="kn-mb-md">
+                    <button
+                        onClick={handleSuggestSkills}
+                        className="kn-btn kn-btn--secondary kn-btn--sm"
+                        disabled={isSuggesting}
+                    >
+                        {isSuggesting ? 'Optimizing...' : '✨ Suggest Skills'}
+                    </button>
+                </div>
+
+                <div className="kn-form-group">
+                    <label className="kn-form-label">Technical Skills ({resumeData.skills.technical?.length || 0})</label>
+                    <TagInput
+                        tags={resumeData.skills.technical || []}
+                        onAdd={(tag) => updateSkills('technical', [...(resumeData.skills.technical || []), tag])}
+                        onRemove={(tag) => updateSkills('technical', (resumeData.skills.technical || []).filter(t => t !== tag))}
+                        placeholder="Type skill & press Enter..."
+                    />
+                </div>
+
+                <div className="kn-form-group">
+                    <label className="kn-form-label">Soft Skills ({resumeData.skills.soft?.length || 0})</label>
+                    <TagInput
+                        tags={resumeData.skills.soft || []}
+                        onAdd={(tag) => updateSkills('soft', [...(resumeData.skills.soft || []), tag])}
+                        onRemove={(tag) => updateSkills('soft', (resumeData.skills.soft || []).filter(t => t !== tag))}
+                        placeholder="Type skill & press Enter..."
+                    />
+                </div>
+
+                <div className="kn-form-group">
+                    <label className="kn-form-label">Tools & Technologies ({resumeData.skills.tools?.length || 0})</label>
+                    <TagInput
+                        tags={resumeData.skills.tools || []}
+                        onAdd={(tag) => updateSkills('tools', [...(resumeData.skills.tools || []), tag])}
+                        onRemove={(tag) => updateSkills('tools', (resumeData.skills.tools || []).filter(t => t !== tag))}
+                        placeholder="Type skill & press Enter..."
+                    />
+                </div>
             </BuilderSection>
 
             {/* Education */}
@@ -218,22 +282,57 @@ export default function ResumeForm() {
                 <button onClick={handleAddExperience} className="kn-btn kn-btn--secondary kn-mt-sm">Add Experience</button>
             </BuilderSection>
 
-            {/* Projects */}
+            {/* Projects - Accordion Style */}
             <BuilderSection title="Projects">
-                {resumeData.projects.length > 0 && (
-                    <ul className="kn-mb-md">
-                        {resumeData.projects.map(pj => (
-                            <li key={pj.id} className="kn-flex-between kn-proof-item kn-mb-xs">
-                                <span>{pj.name}</span>
-                                <button onClick={() => removeEntry('projects', pj.id)} className="text-small text-muted">Remove</button>
-                            </li>
-                        ))}
-                    </ul>
-                )}
-                <InputField label="Project Name" value={projInput.name} onChange={v => setProjInput({ ...projInput, name: v })} />
-                <TextAreaField label="Description" value={projInput.description} onChange={v => setProjInput({ ...projInput, description: v })} placeholder="What did you build?" />
-                <Suggestion text={projInput.description} />
-                <button onClick={handleAddProject} className="kn-btn kn-btn--secondary kn-mt-sm">Add Project</button>
+                <div className="kn-mb-md">
+                    {resumeData.projects.map(pj => (
+                        <div key={pj.id} className="kn-card kn-mb-sm" style={{ borderLeft: '4px solid var(--color-accent)' }}>
+                            <div className="kn-flex-between">
+                                <span style={{ fontWeight: 600 }}>{pj.name}</span>
+                                <button onClick={() => removeEntry('projects', pj.id)} className="text-small text-muted kn-btn--secondary" style={{ border: 'none' }}>🗑️</button>
+                            </div>
+                            <div className="text-small text-muted kn-mt-xs">
+                                {pj.description?.substring(0, 50)}...
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                <div className="kn-panel-section" style={{ background: '#fcfcfc' }}>
+                    <h4 className="kn-text-base" style={{ fontWeight: 600, marginBottom: '10px' }}>Add New Project</h4>
+                    <InputField
+                        label="Project Title"
+                        value={projInput.name}
+                        onChange={v => setProjInput({ ...projInput, name: v })}
+                        placeholder="e.g. AI Content Generator"
+                    />
+
+                    <TextAreaField
+                        label="Description"
+                        value={projInput.description}
+                        onChange={v => setProjInput({ ...projInput, description: v })}
+                        placeholder="What problem did you solve?"
+                        maxLength={200}
+                    />
+                    <Suggestion text={projInput.description} />
+
+                    <div className="kn-form-group">
+                        <label className="kn-form-label">Tech Stack</label>
+                        <TagInput
+                            tags={projInput.techStack}
+                            onAdd={(tag) => setProjInput(prev => ({ ...prev, techStack: [...prev.techStack, tag] }))}
+                            onRemove={(tag) => setProjInput(prev => ({ ...prev, techStack: prev.techStack.filter(t => t !== tag) }))}
+                            placeholder="Add tech (e.g. React)..."
+                        />
+                    </div>
+
+                    <div className="kn-grid-2">
+                        <InputField label="Live URL" value={projInput.liveUrl} onChange={v => setProjInput({ ...projInput, liveUrl: v })} placeholder="https://..." />
+                        <InputField label="GitHub URL" value={projInput.githubUrl} onChange={v => setProjInput({ ...projInput, githubUrl: v })} placeholder="https://github.com/..." />
+                    </div>
+
+                    <button onClick={handleAddProject} className="kn-btn kn-btn--secondary kn-mt-sm kn-btn--full">Add Project</button>
+                </div>
             </BuilderSection>
 
         </div>

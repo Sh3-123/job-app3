@@ -103,8 +103,19 @@ const ResumePreview = () => {
                     <div style={styles.sectionTitle}>Projects</div>
                     {resumeData.projects.map(proj => (
                         <div key={proj.id} style={{ marginBottom: '10px' }}>
-                            <div style={styles.entryTitle}>{proj.name}</div>
+                            <div style={styles.entryTitle}>
+                                {proj.name}
+                                <span style={{ float: 'right', fontWeight: 'normal', fontSize: '0.9em' }}>
+                                    {proj.liveUrl && <a href={proj.liveUrl} target="_blank" rel="noreferrer" style={{ color: 'inherit', marginRight: '8px' }}>Live ↗</a>}
+                                    {proj.githubUrl && <a href={proj.githubUrl} target="_blank" rel="noreferrer" style={{ color: 'inherit' }}>Code ↗</a>}
+                                </span>
+                            </div>
                             <p>{proj.description}</p>
+                            {proj.techStack && proj.techStack.length > 0 && (
+                                <div style={{ marginTop: '4px', fontStyle: 'italic', fontSize: '0.9em', color: '#555' }}>
+                                    Stack: {proj.techStack.join(', ')}
+                                </div>
+                            )}
                         </div>
                     ))}
                 </section>
@@ -127,9 +138,33 @@ const ResumePreview = () => {
             )}
 
             {/* Skills */}
-            {resumeData.skills && (
+            {resumeData.skills && (typeof resumeData.skills === 'object') && (
                 <section style={styles.section}>
                     <div style={styles.sectionTitle}>Technical Skills</div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                        {resumeData.skills.technical?.length > 0 && (
+                            <div style={{ width: '100%', marginBottom: '4px' }}>
+                                <strong>Languages & Frameworks:</strong> {resumeData.skills.technical.join(', ')}
+                            </div>
+                        )}
+                        {resumeData.skills.tools?.length > 0 && (
+                            <div style={{ width: '100%', marginBottom: '4px' }}>
+                                <strong>Tools:</strong> {resumeData.skills.tools.join(', ')}
+                            </div>
+                        )}
+                        {resumeData.skills.soft?.length > 0 && (
+                            <div style={{ width: '100%' }}>
+                                <strong>Soft Skills:</strong> {resumeData.skills.soft.join(', ')}
+                            </div>
+                        )}
+                    </div>
+                </section>
+            )}
+
+            {/* Fallback for old string format skills if any */}
+            {resumeData.skills && (typeof resumeData.skills === 'string') && (
+                <section style={styles.section}>
+                    <div style={styles.sectionTitle}>Skills</div>
                     <p>{resumeData.skills}</p>
                 </section>
             )}
